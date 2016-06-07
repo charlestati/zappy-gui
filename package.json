@@ -1,0 +1,25 @@
+{
+  "name": "ZappyGUI",
+  "version": "0.1.0",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zappy-Team/zappy-graphic.git"
+  },
+  "author": "Charles Tatibouet",
+  "license": "MIT",
+  "dependencies": {
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "devtron": "^1.1.2",
+    "electron-prebuilt": "^1.2.1",
+    "eslint": "^2.11.1",
+    "eslint-config-airbnb-base": "^3.0.1"
+  }
+}
