@@ -6,5 +6,11 @@
 </head>
 <body>
 <h1>Zappy GUI!</h1>
+<form id="server-info">
+  <input id="server-ip" type="text" placeholder="Server IP address">
+  <input id="server-port" type="number" placeholder="Server port" min="0" max="65535" step="1">
+  <button type="submit">Connect</button>
+</form>
+<script src="render-process/socket.js"></script>
 </body>
 </html>
