@@ -19,6 +19,10 @@ class Socket {
   send(msg) {
     this.socket.write(msg + this.sendDelimiter);
   }
+
+  on(event, cb) {
+    return this.socket.on(event, cb);
+  }
 }
 
 module.exports = Socket;

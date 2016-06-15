@@ -1,16 +1,8 @@
 import gulp from 'gulp';
+import del from 'del';
 import gulpLoadPlugins from 'gulp-load-plugins';
 
 const $ = gulpLoadPlugins();
-
-gulp.task('scripts', () =>
-  gulp.src('assets/scripts/**/*.js')
-    .pipe($.sourcemaps.init())
-    .pipe($.concat('main.js'))
-    .pipe($.size({ title: 'scripts' }))
-    .pipe($.sourcemaps.write('.'))
-    .pipe(gulp.dest('app/assets/scripts'))
-);
 
 gulp.task('styles', () => {
   gulp.src(['assets/styles/**/*.scss', 'assets/styles/**/*.css'])
@@ -35,10 +27,11 @@ gulp.task('images', () =>
     .pipe($.size({ title: 'images' }))
 );
 
-gulp.task('watch', ['scripts', 'styles', 'images'], () => {
-  gulp.watch(['assets/scripts/**/*.js'], ['scripts']);
+gulp.task('watch', ['styles', 'images'], () => {
   gulp.watch(['assets/styles/**/*.{scss,css}'], ['styles']);
   gulp.watch(['assets/images/**/*'], ['images']);
 });
 
-gulp.task('default', ['scripts', 'styles', 'images']);
+gulp.task('clean', () => del(['app/assets/styles/*', 'app/assets/images/*']));
+
+gulp.task('default', ['styles', 'images']);

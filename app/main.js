@@ -1,6 +1,6 @@
 const path = require('path');
 const electron = require('electron');
-require(path.join(__dirname, 'main-process/zappy.js'));
+require(path.join(__dirname, 'src', 'zappy.js'));
 
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;

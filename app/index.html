@@ -10,9 +10,13 @@
 <form id="server-info">
   <input id="server-ip" type="text" placeholder="Server IP address">
   <input id="server-port" type="number" placeholder="Server port" min="0" max="65535" step="1">
-  <button type="submit">Connect</button>
+  <button id="start" type="submit">Connect</button>
 </form>
-<script src="render-process/socket.js"></script>
+<div id="canvas">
+  <canvas id="background"></canvas>
+  <canvas id="entities"></canvas>
+  <canvas id="foreground"></canvas>
+</div>
 <script src="assets/scripts/main.js"></script>
 </body>
 </html>
