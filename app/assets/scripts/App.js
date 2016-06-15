@@ -1,15 +1,15 @@
-const ipc = require('electron').ipcRenderer;
-
 class App {
   constructor() {
     this.isReady = false;
-    this.intro = document.getElementById('server-info');
-    this.startButton = document.getElementById('start');
+    this.intro = document.querySelector('.server-info');
+    this.startButton = document.querySelector('.start');
   }
 
   setGame(game) {
     this.game = game;
-    this.isReady = true;
+    game.loadMap().then(() => {
+      this.isReady = true;
+    });
   }
 
   tryStartingGame(host, port) {
@@ -38,31 +38,12 @@ class App {
     this.game.run();
   }
 
-  handleData(data) {
-    if (data === 'BIENVENUE') {
-      ipc.send('send', 'GRAPHIC');
-    }
-  }
-
-  socketError(e) {
-    console.log(e.code);
-  }
-
-  socketClose() {
-    console.log('close');
-  }
-
-  socketConnection(response) {
-    console.log(response.status);
-    if (response.status === 'success') {
-      document.querySelector('h1').style.color = 'green';
-    } else {
-      document.querySelector('h1').style.color = 'red';
-    }
-  }
-
   hideIntro() {
     this.intro.style.display = 'none';
+  }
+
+  showIntro() {
+    this.intro.style.display = 'block';
   }
 }
 
