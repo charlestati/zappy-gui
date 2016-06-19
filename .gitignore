@@ -1,5 +1,5 @@
 .idea/
 node_modules/
 npm-debug.log
-app/assets/styles/
-app/assets/images/
+app/styles/
+app/images/

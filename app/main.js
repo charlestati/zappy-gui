@@ -11,8 +11,8 @@ let mainWindow;
 function initialize() {
   function createWindow() {
     mainWindow = new BrowserWindow({
-      width: 1200,
-      height: 750,
+      width: 1280,
+      height: 720,
     });
 
     mainWindow.loadURL(path.join('file://', __dirname, '/index.html'));

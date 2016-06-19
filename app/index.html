@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Zappy GUI</title>
-  <link rel="stylesheet" href="assets/styles/main.css">
+  <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
 <h1>Zappy GUI!</h1>
@@ -12,11 +12,7 @@
   <input class="server-port" type="number" placeholder="Server port" min="0" max="65535" step="1" required>
   <button class="start" type="submit">Connect</button>
 </form>
-<div id="canvas">
-  <canvas id="background"></canvas>
-  <canvas id="entities"></canvas>
-  <canvas id="foreground"></canvas>
-</div>
-<script src="assets/scripts/main.js"></script>
+<div id="canvas"></div>
+<script src="scripts/main.js"></script>
 </body>
 </html>

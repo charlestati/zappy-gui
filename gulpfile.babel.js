@@ -14,7 +14,7 @@ gulp.task('styles', () => {
     .pipe($.if('*.css', $.cssnano()))
     .pipe($.size({ title: 'styles' }))
     .pipe($.sourcemaps.write('./'))
-    .pipe(gulp.dest('app/assets/styles'));
+    .pipe(gulp.dest('app/styles'));
 });
 
 gulp.task('images', () =>
@@ -23,7 +23,7 @@ gulp.task('images', () =>
       progressive: true,
       interlaced: true,
     })))
-    .pipe(gulp.dest('app/assets/images'))
+    .pipe(gulp.dest('app/images'))
     .pipe($.size({ title: 'images' }))
 );
 
@@ -32,6 +32,6 @@ gulp.task('watch', ['styles', 'images'], () => {
   gulp.watch(['assets/images/**/*'], ['images']);
 });
 
-gulp.task('clean', () => del(['app/assets/styles/*', 'app/assets/images/*']));
+gulp.task('clean', () => del(['app/styles/*', 'app/images/*']));
 
 gulp.task('default', ['styles', 'images']);
