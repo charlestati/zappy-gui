@@ -9,6 +9,7 @@ class App {
   }
 
   start(host, port) {
+    this.hideIntro();
     this.game.run(host, port);
   }
 

@@ -14,7 +14,7 @@ class GameClient {
   }
 
   connect() {
-    return this.socket.connect(this.host, this.port);
+    this.socket.connect(this.host, this.port);
   }
 
   sendHello() {

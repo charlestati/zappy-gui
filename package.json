@@ -3,7 +3,8 @@
   "main": "app/main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "electron . --debug"
+    "dev": "electron . --debug",
+    "build": "gulp"
   },
   "dependencies": {
     "bluebird": "^3.4.0",

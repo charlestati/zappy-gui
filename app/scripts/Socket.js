@@ -8,12 +8,7 @@ class Socket {
   }
 
   connect(host, port) {
-    return new Promise((resolve, reject) => {
-      this.socket.on('error', e => {
-        reject(e);
-      });
-      this.socket.connect(port, host, resolve);
-    });
+    this.socket.connect(port, host);
   }
 
   send(msg) {

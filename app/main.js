@@ -15,6 +15,9 @@ function initialize() {
       height: 720,
     });
 
+    mainWindow.setResizable(false);
+    mainWindow.setFullScreenable(false);
+
     mainWindow.loadURL(path.join('file://', __dirname, '/index.html'));
 
     if (debug) {
