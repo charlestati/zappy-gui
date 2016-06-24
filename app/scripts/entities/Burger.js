@@ -5,13 +5,20 @@ class Burger extends Entity {
   constructor(x, y, state) {
     super(x, y, state);
 
-    this.sprite = this.state.foodSprites.create(x * this.state.gridSize,
-      y * this.state.gridSize, 'burger');
-    this.sprite.animations.add('idle');
-    this.sprite.animations.play('idle', 5, true);
+    this.sprite = this.state.add.sprite(x * this.state.gridSize, y * this.state.gridSize, 'shadow');
 
-    this.sprite.scale.setTo(1.5, 1.5);
-    this.sprite.smoothed = false;
+    const burger = this.state.add.sprite(0, -2, 'burger');
+    burger.animations.add('idle');
+    burger.animations.play('idle', 5, true);
+    burger.smoothed = false;
+
+    this.sprite.addChild(burger);
+
+    this.state.foodSprites.add(this.sprite);
+  }
+
+  destroy() {
+    this.sprite.destroy();
   }
 }
 

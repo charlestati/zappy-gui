@@ -5,11 +5,14 @@ class Chest extends Entity {
   constructor(x, y, state) {
     super(x, y, state);
 
-    this.sprite = this.state.chestSprites.create(x * this.state.gridSize,
+    this.sprite = this.state.gemSprites.create(x * this.state.gridSize,
       y * this.state.gridSize, 'chest');
 
-    this.sprite.scale.setTo(1.5, 1.5);
     this.sprite.smoothed = false;
+  }
+
+  destroy() {
+    this.sprite.destroy();
   }
 }
 

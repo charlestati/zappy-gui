@@ -4,7 +4,7 @@ class BootState extends Phaser.State {
     this.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
     this.scale.pageAlignHorizontally = true;
     this.scale.pageAlignVertically = true;
-    this.stage.backgroundColor = '#78cf82';
+    this.stage.backgroundColor = '#b58666';
     this.game.state.start('load');
   }
 }

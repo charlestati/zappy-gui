@@ -8,8 +8,6 @@ const GameState = require(path.join(__dirname, 'states', 'GameState.js'));
 
 class Game extends Phaser.Game {
   constructor(app) {
-    // todo Test with non retina screen
-    // window.devicePixelRatio = 1;
     const config = {
       width: window.innerWidth,
       height: window.innerHeight,
