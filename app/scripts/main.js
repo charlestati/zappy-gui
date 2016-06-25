@@ -10,6 +10,7 @@ function initApp() {
   app.setGame(game);
   //app.start('pheonyx.net', 7623);
   app.start('10.0.0.9', 4242);
+  //app.start('10.0.0.9', 4243);
 
   document.querySelector('.server-info').addEventListener('submit', event => {
     event.preventDefault();

@@ -4,6 +4,7 @@ const GameClient = require(path.join(__dirname, '..', 'GameClient.js'));
 const Player = require(path.join(__dirname, '..', 'entities', 'Player.js'));
 const Chest = require(path.join(__dirname, '..', 'entities', 'Chest.js'));
 const Burger = require(path.join(__dirname, '..', 'entities', 'Burger.js'));
+const Egg = require(path.join(__dirname, '..', 'entities', 'Egg.js'));
 
 class GameState extends Phaser.State {
   preload() {
@@ -32,25 +33,68 @@ class GameState extends Phaser.State {
     this.gemSprites = this.add.group();
     this.foodSprites = this.add.group();
     this.playerSprites = this.add.group();
+    this.eggSprites = this.add.group();
 
     this.setupKeys();
     this.setupGamepad();
 
-    this.players = [];
     this.gems = [];
     this.food = [];
+    this.players = [];
+    this.eggs = [];
+
+    this.followingId = 0;
+
+    this.soundtrack = this.add.audio('route_101', 1, true);
+    this.soundtrack.play();
+  }
+
+  updateScale() {
+    this.world.scale.set(this.worldScale);
+
+    // todo Camera bug when scaling
+    /*
+     this.camera.scale.set(this.worldScale);
+
+     this.layerGrass.scale.set(this.worldScale);
+     this.layerVegetals.scale.set(this.worldScale);
+
+     this.gemSprites.scale.set(this.worldScale);
+     this.foodSprites.scale.set(this.worldScale);
+     this.playerSprites.scale.set(this.worldScale);
+     */
   }
 
   worldZoomIn() {
     this.worldScale += 0.05;
     this.worldScale = Phaser.Math.clamp(this.worldScale, this.minScale, this.maxScale);
-    this.world.scale.set(this.worldScale);
+    this.updateScale();
   }
 
   worldZoomOut() {
     this.worldScale -= 0.05;
     this.worldScale = Phaser.Math.clamp(this.worldScale, this.minScale, this.maxScale);
-    this.world.scale.set(this.worldScale);
+    this.updateScale();
+  }
+
+  followNext() {
+    if (this.players.length > 0) {
+      ++this.followingId;
+      if (this.followingId >= this.players.length) {
+        this.followingId = 0;
+      }
+      this.players[this.followingId].follow();
+    }
+  }
+
+  followPrev() {
+    if (this.players.length > 0) {
+      --this.followingId;
+      if (this.followingId <= 0) {
+        this.followingId = this.players.length - 1;
+      }
+      this.players[this.followingId].follow();
+    }
   }
 
   setupKeys() {
@@ -75,6 +119,11 @@ class GameState extends Phaser.State {
         this.worldZoomOut();
       }
     };
+
+    const keySpacebar = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    keySpacebar.onDown.add(() => {
+      this.followNext();
+    });
   }
 
   setupGamepad() {
@@ -83,30 +132,41 @@ class GameState extends Phaser.State {
 
     this.pad.addCallbacks(this, {
       onConnect: () => {
-        const rightTrigger = this.pad.getButton(Phaser.Gamepad.XBOX360_RIGHT_TRIGGER);
-        const leftTrigger = this.pad.getButton(Phaser.Gamepad.XBOX360_LEFT_TRIGGER);
+        const rightBumper = this.pad.getButton(Phaser.Gamepad.XBOX360_RIGHT_BUMPER);
+        const leftBumper = this.pad.getButton(Phaser.Gamepad.XBOX360_LEFT_BUMPER);
+        const aButton = this.pad.getButton(Phaser.Gamepad.XBOX360_A);
+        const bButton = this.pad.getButton(Phaser.Gamepad.XBOX360_B);
 
-        rightTrigger.onDown(() => {
+        const rightBumperCb = () => {
           if (this.worldScale < this.maxScale) {
             this.worldZoomIn();
+            this.worldZoomIn();
           }
-        });
+        };
 
-        leftTrigger.onDown(() => {
+        const leftBumperCb = () => {
           if (this.worldScale > this.minScale) {
             this.worldZoomOut();
+            this.worldZoomOut();
           }
+        };
+
+        rightBumper.onDown.add(rightBumperCb);
+
+        leftBumper.onDown.add(leftBumperCb);
+
+        aButton.onDown.add(() => {
+          this.followNext();
+        });
+
+        bButton.onDown.add(() => {
+          this.followPrev();
         });
       },
     });
   }
 
   setupWorld() {
-    const width = this.mapWidth * this.gridSize;
-    const height = this.mapHeight * this.gridSize;
-    this.world.setBounds(-this.offsetX, -this.offsetY,
-      width + this.offsetX * 2, height + this.offsetY * 2);
-    // todo Camera bug when scale > 1
     if (this.mapWidth < 30 && this.mapHeight < 30) {
       if (this.mapWidth < 10 && this.mapHeight < 10) {
         this.worldScale = this.maxScale;
@@ -116,8 +176,13 @@ class GameState extends Phaser.State {
       this.world.scale.set(this.worldScale);
     }
 
-    // todo Until fixed
-    this.world.scale.set(1);
+    const width = this.mapWidth * this.gridSize;
+    const height = this.mapHeight * this.gridSize;
+
+    this.world.setBounds(-this.offsetX, -this.offsetY,
+      width + this.offsetX * 2, height + this.offsetY * 2);
+
+    this.updateScale();
   }
 
   addPlayer(x, y, id, team, spriteName) {
@@ -131,7 +196,8 @@ class GameState extends Phaser.State {
   updateCamera() {
     let speed = 10;
 
-    if (this.game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)) {
+    if (this.game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)
+      || this.pad.isDown(Phaser.Gamepad.XBOX360_RIGHT_TRIGGER)) {
       speed = 30;
     }
 
@@ -150,23 +216,55 @@ class GameState extends Phaser.State {
       this.camera.follow(null);
       this.camera.x += speed;
     }
+
+    if (this.pad.isDown(Phaser.Gamepad.XBOX360_DPAD_LEFT)
+      || this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) < -0.1) {
+      this.camera.follow(null);
+      this.camera.x -= speed;
+    } else if (this.pad.isDown(Phaser.Gamepad.XBOX360_DPAD_RIGHT)
+      || this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_X) > 0.1) {
+      this.camera.follow(null);
+      this.camera.x += speed;
+    }
+
+    if (this.pad.isDown(Phaser.Gamepad.XBOX360_DPAD_UP)
+      || this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) < -0.1) {
+      this.camera.follow(null);
+      this.camera.y -= speed;
+    } else if (this.pad.isDown(Phaser.Gamepad.XBOX360_DPAD_DOWN)
+      || this.pad.axis(Phaser.Gamepad.XBOX360_STICK_LEFT_Y) > 0.1) {
+      this.camera.follow(null);
+      this.camera.y += speed;
+    }
   }
 
-  tileIsEmpty(x, y) {
-    const food = _.find(this.food, f =>
+  tileHasFood(x, y) {
+    return _.find(this.food, f =>
       f.x === x && f.y === y
     );
+  }
 
-    const gem = _.find(this.gems, g =>
+  tileHasGem(x, y) {
+    return _.find(this.gems, g =>
       g.x === x && g.y === y
     );
-
-    return !food && !gem;
   }
 
   getPlayerFromId(id) {
     return _.find(this.players, player =>
       player.id === id
+    );
+  }
+
+  getEggFromId(id) {
+    return _.find(this.eggs, egg =>
+      egg.id === id
+    );
+  }
+
+  getPlayersOnTile(x, y) {
+    return _.filter(this.players, (player) =>
+      player.x === x && player.y === y
     );
   }
 
@@ -201,6 +299,19 @@ class GameState extends Phaser.State {
     }
   }
 
+  spawnEgg(x, y, eggId, playerId) {
+    this.eggs.push(new Egg(x, y, eggId, playerId, this));
+  }
+
+  removeEgg(id) {
+    const egg = this.getEggFromId(id);
+
+    if (egg) {
+      this.eggs = _.without(this.eggs, egg);
+      egg.destroy();
+    }
+  }
+
   receiveMsz(x, y) {
     this.mapWidth = x;
     this.mapHeight = y;
@@ -216,7 +327,7 @@ class GameState extends Phaser.State {
 
   receiveBct(x, y, q1, q2, q3, q4, q5, q6, q7) {
     if (q1 > 0) {
-      if (this.tileIsEmpty(x, y)) {
+      if (!this.tileHasFood(x, y)) {
         this.food.push(new Burger(x, y, this));
       }
     } else {
@@ -224,7 +335,7 @@ class GameState extends Phaser.State {
     }
 
     if (q2 > 0 || q3 > 0 || q4 > 0 || q5 > 0 || q6 > 0 || q7 > 0) {
-      if (this.tileIsEmpty(x, y)) {
+      if (!this.tileHasGem(x, y)) {
         this.gems.push(new Chest(x, y, this));
       }
     } else {
@@ -246,6 +357,46 @@ class GameState extends Phaser.State {
 
   receivePdi(id) {
     this.removePlayer(id);
+  }
+
+  receiveEnw(eggId, playerId, x, y) {
+    this.spawnEgg(x, y, eggId, playerId);
+  }
+
+  receiveEdi(id) {
+    this.removeEgg(id);
+  }
+
+  receiveEbo(id) {
+    this.removeEgg(id);
+  }
+
+  receiveEht(id) {
+    this.removeEgg(id);
+  }
+
+  receiveSeg(team) {
+    alert(`Team ${team} won!`);
+    this.game.global.app.showIntro();
+    this.game.destroy();
+  }
+
+  receivePic(x, y, level, ...playerIds) {
+    for (let i = 0; i < playerIds.length; ++i) {
+      const player = this.getPlayerFromId(playerIds[i]);
+
+      if (player) {
+        player.startCasting();
+      }
+    }
+  }
+
+  receivePie(x, y, result) {
+    const players = this.getPlayersOnTile(x, y);
+
+    for (let i = 0; i < players.length; ++i) {
+      players[i].stopCasting();
+    }
   }
 
   handleData(data) {

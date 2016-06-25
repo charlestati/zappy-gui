@@ -6,12 +6,14 @@
   <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-<h1>Zappy GUI!</h1>
-<form class="server-info">
-  <input class="server-ip" type="text" placeholder="Server IP address" required>
-  <input class="server-port" type="number" placeholder="Server port" min="0" max="65535" step="1" required>
-  <button class="start" type="submit">Connect</button>
-</form>
+<div class="wrap">
+  <h1>Zappy GUI</h1>
+  <form class="server-info">
+    <input class="server-ip" type="text" placeholder="Server address" required>
+    <input class="server-port" type="number" placeholder="Server port" min="0" max="65535" step="1" required>
+    <button class="start" type="submit">Connect</button>
+  </form>
+</div>
 <div id="canvas"></div>
 <script src="scripts/main.js"></script>
 </body>

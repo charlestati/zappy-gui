@@ -16,6 +16,9 @@ class LoadState extends Phaser.State {
     this.load.image('shadow', 'images/shadow.png');
     this.load.spritesheet('brendan', 'images/brendan.png', 14, 21, 12);
     this.load.spritesheet('burger', 'images/burger.png', 16, 16, 6);
+    this.load.spritesheet('eye', 'images/eye.png', 42, 48, 126);
+    this.load.spritesheet('sparks', 'images/sparks.png', 16, 16, 6);
+    this.load.audio('route_101', 'audio/route_101.mp3');
   }
 
   create() {

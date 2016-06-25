@@ -39,15 +39,20 @@ class Player extends Entity {
       const tween = this.state.add.tween(this.state.camera).to({
         x: this.x * this.state.gridSize - this.state.camera.width / 2,
         y: this.y * this.state.gridSize - this.state.camera.height / 2,
-      }, 500, Phaser.Easing.Quadratic.InOut, true);
+      }, 250, Phaser.Easing.Quadratic.InOut, true);
       tween.onComplete.add(() => {
-        this.state.camera.follow(sprite, 100);
+        this.state.camera.follow(sprite, Phaser.Camera.FOLLOW_TOPDOWN);
       }, this);
     }, this.state);
 
     this.state.playerSprites.add(this.spriteShadow);
 
+    this.spriteSparks = this.state.add.sprite(0, 0, 'sparks');
+    this.spriteSparks.smoothed = false;
+    this.spriteSparks.animations.add('idle');
+
     this.isMoving = false;
+    this.isCasting = false;
   }
 
   moveTo(x, y, orientation) {
@@ -88,6 +93,32 @@ class Player extends Entity {
 
   destroy() {
     this.spriteShadow.destroy();
+  }
+
+  follow() {
+    const tween = this.state.add.tween(this.state.camera).to({
+      x: this.x * this.state.gridSize - this.state.camera.width / 2,
+      y: this.y * this.state.gridSize - this.state.camera.height / 2,
+    }, 250, Phaser.Easing.Quadratic.InOut, true);
+    tween.onComplete.add(() => {
+      this.state.camera.follow(this.spriteShadow, Phaser.Camera.FOLLOW_TOPDOWN);
+    }, this);
+  }
+
+  startCasting() {
+    if (this.isCasting) {
+      return;
+    }
+
+    this.isCasting = true;
+
+    this.spriteShadow.addChild(this.spriteSparks);
+    this.spriteSparks.animations.play('idle', 6, true);
+  }
+
+  stopCasting() {
+    this.spriteShadow.removeChild(this.spriteSparks);
+    this.isCasting = false;
   }
 }
 
