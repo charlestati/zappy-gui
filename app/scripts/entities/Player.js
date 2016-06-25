@@ -19,6 +19,7 @@ class Player extends Entity {
     this.spriteShadow = this.state.add.sprite(initialX, initialY, 'shadow');
 
     this.spritePlayer = this.state.add.sprite(0, 0, spriteName);
+    this.spritePlayer.scale.set(1, 1);
     this.spritePlayer.smoothed = false;
 
     this.spritePlayer.animations.add('idle_down', [0]);

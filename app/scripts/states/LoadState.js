@@ -14,6 +14,13 @@ class LoadState extends Phaser.State {
     this.load.image('tiles', 'images/trantor.png');
     this.load.image('chest', 'images/chest.png');
     this.load.image('shadow', 'images/shadow.png');
+    this.load.image('linemate', 'images/linemate.png');
+    this.load.image('deraumere', 'images/deraumere.png');
+    this.load.image('sibur', 'images/sibur.png');
+    this.load.image('mendiane', 'images/mendiane.png');
+    this.load.image('phiras', 'images/phiras.png');
+    this.load.image('thystame', 'images/thystame.png');
+    this.load.image('meat', 'images/meat.png');
     this.load.spritesheet('brendan', 'images/brendan.png', 14, 21, 12);
     this.load.spritesheet('burger', 'images/burger.png', 16, 16, 6);
     this.load.spritesheet('eye', 'images/eye.png', 42, 48, 126);

@@ -5,6 +5,13 @@ const Player = require(path.join(__dirname, '..', 'entities', 'Player.js'));
 const Chest = require(path.join(__dirname, '..', 'entities', 'Chest.js'));
 const Burger = require(path.join(__dirname, '..', 'entities', 'Burger.js'));
 const Egg = require(path.join(__dirname, '..', 'entities', 'Egg.js'));
+const Linemate = require(path.join(__dirname, '..', 'entities', 'Linemate.js'));
+const Deraumere = require(path.join(__dirname, '..', 'entities', 'Deraumere.js'));
+const Sibur = require(path.join(__dirname, '..', 'entities', 'Sibur.js'));
+const Mendiane = require(path.join(__dirname, '..', 'entities', 'Mendiane.js'));
+const Phiras = require(path.join(__dirname, '..', 'entities', 'Phiras.js'));
+const Thystame = require(path.join(__dirname, '..', 'entities', 'Thystame.js'));
+const Meat = require(path.join(__dirname, '..', 'entities', 'Meat.js'));
 
 class GameState extends Phaser.State {
   preload() {
@@ -12,9 +19,9 @@ class GameState extends Phaser.State {
   }
 
   create() {
-    this.worldScale = 1;
     this.minScale = 1;
     this.maxScale = 3;
+    this.worldScale = this.minScale;
     this.gridSize = 16;
     this.offsetX = 10 * this.gridSize;
     this.offsetY = 10 * this.gridSize;
@@ -30,38 +37,78 @@ class GameState extends Phaser.State {
     this.layerVegetals.wrap = true;
     this.layerVegetals.smoothed = false;
 
-    this.gemSprites = this.add.group();
     this.foodSprites = this.add.group();
-    this.playerSprites = this.add.group();
+    this.gemSprites = this.add.group();
     this.eggSprites = this.add.group();
+
+    this.chestSprites = this.add.group();
+    this.burgerSprites = this.add.group();
+
+    this.playerSprites = this.add.group();
 
     this.setupKeys();
     this.setupGamepad();
 
-    this.gems = [];
+    this.linemate = [];
+    this.deraumere = [];
+    this.sibur = [];
+    this.mendiane = [];
+    this.phiras = [];
+    this.thystame = [];
     this.food = [];
     this.players = [];
     this.eggs = [];
+    this.chests = [];
+    this.burgers = [];
 
     this.followingId = 0;
 
     this.soundtrack = this.add.audio('route_101', 1, true);
     this.soundtrack.play();
+
+    this.showGrid = false;
+
+    this.spawnLinemate(0, 0);
+    this.spawnPhiras(0, 0);
   }
 
   updateScale() {
-    this.world.scale.set(this.worldScale);
+    this.layerGrass.scale.set(this.worldScale);
+    this.layerVegetals.scale.set(this.worldScale);
+
+    this.gemSprites.scale.set(this.worldScale);
+    this.foodSprites.scale.set(this.worldScale);
+    this.playerSprites.scale.set(this.worldScale);
+    this.burgerSprites.scale.set(this.worldScale);
+    this.chestSprites.scale.set(this.worldScale);
+
+    if (this.gridSprite) {
+      this.gridSprite.scale.set(this.worldScale);
+    }
+
+    this.world.setBounds(-this.offsetX, -this.offsetY,
+      this.game.width * this.worldScale + this.offsetX * 2,
+      this.game.height * this.worldScale + this.offsetY * 2);
+
+    if (this.worldScale < this.maxScale) {
+      this.chestSprites.visible = true;
+      this.burgerSprites.visible = true;
+      this.foodSprites.visible = false;
+      this.gemSprites.visible = false;
+    } else {
+      this.chestSprites.visible = false;
+      this.burgerSprites.visible = false;
+      this.foodSprites.visible = true;
+      this.gemSprites.visible = true;
+    }
 
     // todo Camera bug when scaling
     /*
+     this.gridSize = 16 * this.worldScale;
+
+     this.world.scale.set(this.worldScale);
+
      this.camera.scale.set(this.worldScale);
-
-     this.layerGrass.scale.set(this.worldScale);
-     this.layerVegetals.scale.set(this.worldScale);
-
-     this.gemSprites.scale.set(this.worldScale);
-     this.foodSprites.scale.set(this.worldScale);
-     this.playerSprites.scale.set(this.worldScale);
      */
   }
 
@@ -124,6 +171,24 @@ class GameState extends Phaser.State {
     keySpacebar.onDown.add(() => {
       this.followNext();
     });
+
+    const keyG = this.input.keyboard.addKey(Phaser.Keyboard.G);
+    keyG.onDown.add(() => {
+      if (this.showGrid) {
+        this.showGrid = false;
+        if (this.gridSprite) {
+          this.gridSprite.destroy();
+        }
+      } else {
+        this.showGrid = true;
+        this.gridSprite = this.game.add.sprite(0, 0, this.game.create.grid('grid',
+          this.mapWidth * this.gridSize,
+          this.mapHeight * this.gridSize,
+          this.gridSize, this.gridSize, 'rgba(0, 0, 0, 0.1)'));
+        this.gridSprite.smoothed = false;
+        this.gridSprite.scale.set(this.worldScale, this.worldScale);
+      }
+    });
   }
 
   setupGamepad() {
@@ -173,7 +238,6 @@ class GameState extends Phaser.State {
       } else {
         this.worldScale = 2;
       }
-      this.world.scale.set(this.worldScale);
     }
 
     const width = this.mapWidth * this.gridSize;
@@ -244,12 +308,6 @@ class GameState extends Phaser.State {
     );
   }
 
-  tileHasGem(x, y) {
-    return _.find(this.gems, g =>
-      g.x === x && g.y === y
-    );
-  }
-
   getPlayerFromId(id) {
     return _.find(this.players, player =>
       player.id === id
@@ -266,28 +324,6 @@ class GameState extends Phaser.State {
     return _.filter(this.players, (player) =>
       player.x === x && player.y === y
     );
-  }
-
-  removeFood(x, y) {
-    const food = _.find(this.food, f =>
-      f.x === x && f.y === y
-    );
-
-    if (food) {
-      this.food = _.without(this.food, food);
-      food.destroy();
-    }
-  }
-
-  removeGems(x, y) {
-    const chest = _.find(this.gems, g =>
-      g.x === x && g.y === y
-    );
-
-    if (chest) {
-      this.chest = _.without(this.chest, chest);
-      chest.destroy();
-    }
   }
 
   removePlayer(id) {
@@ -312,34 +348,247 @@ class GameState extends Phaser.State {
     }
   }
 
+  tileHasChest(x, y) {
+    return _.find(this.chests, c =>
+      c.x === x && c.y === y
+    );
+  }
+
+  spawnChest(x, y) {
+    this.chests.push(new Chest(x, y, this));
+  }
+
+  removeChest(x, y) {
+    const chest = _.find(this.chests, c =>
+      c.x === x && c.y === y
+    );
+
+    if (chest) {
+      this.chests = _.without(this.chests, chest);
+      chest.destroy();
+    }
+  }
+
+  spawnFood(x, y) {
+    this.food.push(new Meat(x, y, this));
+    this.burgers.push(new Burger(x, y, this));
+  }
+
+  removeFood(x, y) {
+    const food = _.find(this.food, f =>
+      f.x === x && f.y === y
+    );
+
+    if (food) {
+      this.food = _.without(this.food, food);
+      food.destroy();
+    }
+
+    const burger = _.find(this.burgers, b =>
+      b.x === x && b.y === y
+    );
+
+    if (burger) {
+      this.burgers = _.without(this.burgers, food);
+      burger.destroy();
+    }
+  }
+
+  spawnLinemate(x, y, quantity) {
+    this.linemate.push(new Linemate(x, y, this));
+  }
+
+  tileHasLinemate(x, y) {
+    return _.find(this.linemate, g =>
+      g.x === x && g.y === y
+    );
+  }
+
+  removeLinemate(x, y) {
+    const gem = _.find(this.linemate, g =>
+      g.x === x && g.y === y
+    );
+
+    if (gem) {
+      this.linemate = _.without(this.linemate, gem);
+      gem.destroy();
+    }
+  }
+
+  spawnDeraumere(x, y, quantity) {
+    this.deraumere.push(new Deraumere(x, y, this));
+  }
+
+  tileHasDeraumere(x, y) {
+    return _.find(this.deraumere, g =>
+      g.x === x && g.y === y
+    );
+  }
+
+  removeDeraumere(x, y) {
+    const gem = _.find(this.deraumere, g =>
+      g.x === x && g.y === y
+    );
+
+    if (gem) {
+      this.deraumere = _.without(this.deraumere, gem);
+      gem.destroy();
+    }
+  }
+
+  spawnSibur(x, y, quantity) {
+    this.sibur.push(new Sibur(x, y, this));
+  }
+
+  tileHasSibur(x, y) {
+    return _.find(this.sibur, g =>
+      g.x === x && g.y === y
+    );
+  }
+
+  removeSibur(x, y) {
+    const gem = _.find(this.sibur, g =>
+      g.x === x && g.y === y
+    );
+
+    if (gem) {
+      this.sibur = _.without(this.sibur, gem);
+      gem.destroy();
+    }
+  }
+
+  spawnMendiane(x, y, quantity) {
+    this.mendiane.push(new Mendiane(x, y, this));
+  }
+
+  tileHasMendiane(x, y) {
+    return _.find(this.mendiane, g =>
+      g.x === x && g.y === y
+    );
+  }
+
+  removeMendiane(x, y) {
+    const gem = _.find(this.mendiane, g =>
+      g.x === x && g.y === y
+    );
+
+    if (gem) {
+      this.mendiane = _.without(this.mendiane, gem);
+      gem.destroy();
+    }
+  }
+
+  spawnPhiras(x, y, quantity) {
+    this.phiras.push(new Phiras(x, y, this));
+  }
+
+  tileHasPhiras(x, y) {
+    return _.find(this.phiras, g =>
+      g.x === x && g.y === y
+    );
+  }
+
+  removePhiras(x, y) {
+    const gem = _.find(this.phiras, g =>
+      g.x === x && g.y === y
+    );
+
+    if (gem) {
+      this.phiras = _.without(this.phiras, gem);
+      gem.destroy();
+    }
+  }
+
+  spawnThystame(x, y, quantity) {
+    this.thystame.push(new Thystame(x, y, this));
+  }
+
+  tileHasThystame(x, y) {
+    return _.find(this.thystame, g =>
+      g.x === x && g.y === y
+    );
+  }
+
+  removeThystame(x, y) {
+    const gem = _.find(this.thystame, g =>
+      g.x === x && g.y === y
+    );
+
+    if (gem) {
+      this.thystame = _.without(this.thystame, gem);
+      gem.destroy();
+    }
+  }
+
   receiveMsz(x, y) {
     this.mapWidth = x;
     this.mapHeight = y;
     this.setupWorld();
-    // todo Debug grid
-    if (false) {
-      this.game.add.sprite(0, 0, this.game.create.grid('grid',
-        16 * this.mapWidth,
-        16 * this.mapHeight,
-        16, 16, 'rgba(250, 0, 0, 0.5)'));
-    }
   }
 
-  receiveBct(x, y, q1, q2, q3, q4, q5, q6, q7) {
-    if (q1 > 0) {
+  receiveBct(x, y, q0, q1, q2, q3, q4, q5, q6) {
+    if (q0 > 0) {
       if (!this.tileHasFood(x, y)) {
-        this.food.push(new Burger(x, y, this));
+        this.spawnFood(x, y);
       }
     } else {
       this.removeFood(x, y);
     }
 
-    if (q2 > 0 || q3 > 0 || q4 > 0 || q5 > 0 || q6 > 0 || q7 > 0) {
-      if (!this.tileHasGem(x, y)) {
-        this.gems.push(new Chest(x, y, this));
+    if (q1 > 0) {
+      if (!this.tileHasLinemate(x, y)) {
+        this.spawnLinemate(x, y);
       }
     } else {
-      this.removeGems(x, y);
+      this.removeLinemate(x, y);
+    }
+
+    if (q2 > 0) {
+      if (!this.tileHasDeraumere(x, y)) {
+        this.spawnDeraumere(x, y);
+      }
+    } else {
+      this.removeDeraumere(x, y);
+    }
+
+    if (q2 > 0) {
+      if (!this.tileHasSibur(x, y)) {
+        this.spawnSibur(x, y);
+      }
+    } else {
+      this.removeSibur(x, y);
+    }
+
+    if (q2 > 0) {
+      if (!this.tileHasMendiane(x, y)) {
+        this.spawnMendiane(x, y);
+      }
+    } else {
+      this.removeMendiane(x, y);
+    }
+
+    if (q2 > 0) {
+      if (!this.tileHasPhiras(x, y)) {
+        this.spawnPhiras(x, y);
+      }
+    } else {
+      this.removePhiras(x, y);
+    }
+
+    if (q2 > 0) {
+      if (!this.tileHasThystame(x, y)) {
+        this.spawnThystame(x, y);
+      }
+    } else {
+      this.removeThystame(x, y);
+    }
+
+    if (q1 > 0 || q2 > 0 || q3 > 0 || q4 > 0 || q5 > 0 || q6 > 0) {
+      if (!this.tileHasChest(x, y)) {
+        this.spawnChest(x, y);
+      }
+    } else {
+      this.removeChest(x, y);
     }
   }
 
@@ -404,7 +653,6 @@ class GameState extends Phaser.State {
     const command = _.head(args);
     const handler = `receive${command.charAt(0).toUpperCase()}${command.slice(1)}`;
     const parameters = _.tail(args);
-
 
     if (typeof this[handler] === 'function') {
       this[handler].apply(this, parameters);

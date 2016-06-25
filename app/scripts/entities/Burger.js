@@ -6,6 +6,7 @@ class Burger extends Entity {
     super(x, y, state);
 
     this.sprite = this.state.add.sprite(x * this.state.gridSize, y * this.state.gridSize, 'shadow');
+    this.sprite.scale.set(1, 1);
 
     const burger = this.state.add.sprite(0, -2, 'burger');
     burger.animations.add('idle');
@@ -14,7 +15,7 @@ class Burger extends Entity {
 
     this.sprite.addChild(burger);
 
-    this.state.foodSprites.add(this.sprite);
+    this.state.burgerSprites.add(this.sprite);
   }
 
   destroy() {
