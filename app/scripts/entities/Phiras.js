@@ -6,7 +6,7 @@ class Phiras extends Entity {
     super(x, y, state);
 
     this.sprite = this.state.gemSprites.create(x * this.state.gridSize + 2,
-      y * this.state.gridSize + this.state.gridSize * 1.75, 'phiras');
+      y * this.state.gridSize + this.state.gridSize * 0.75, 'phiras');
 
     this.sprite.scale.set(0.25, 0.25);
     this.sprite.smoothed = false;

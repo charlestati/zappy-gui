@@ -6,7 +6,7 @@ class Sibur extends Entity {
     super(x, y, state);
 
     this.sprite = this.state.gemSprites.create(x * this.state.gridSize + 2,
-      y * this.state.gridSize + this.state.gridSize / 2, 'sibur');
+      y * this.state.gridSize + this.state.gridSize * 0.5, 'sibur');
 
     this.sprite.scale.set(0.25, 0.25);
     this.sprite.smoothed = false;

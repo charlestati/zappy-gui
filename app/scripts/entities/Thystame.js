@@ -5,8 +5,8 @@ class Thystame extends Entity {
   constructor(x, y, state) {
     super(x, y, state);
 
-    const realX = x * this.state.gridSize + 2 + this.state.gridSize / 2;
-    const realY = y * this.state.gridSize + this.state.gridSize * 1.75;
+    const realX = x * this.state.gridSize + 2 + this.state.gridSize * 0.5;
+    const realY = y * this.state.gridSize + this.state.gridSize * 0.75;
 
     this.sprite = this.state.gemSprites.create(realX, realY, 'thystame');
 
