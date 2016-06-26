@@ -226,42 +226,92 @@ class GameState extends Phaser.State {
   }
 
   getTileInfo(x, y) {
-    this.client.send(`bct ${x} ${y}`);
+    const food = _.find(this.food, f =>
+      f.x === x.toString() && f.y === y.toString()
+    );
+
+    const linemate = _.find(this.linemate, f =>
+      f.x === x.toString() && f.y === y.toString()
+    );
+
+    const deraumere = _.find(this.deraumere, f =>
+      f.x === x.toString() && f.y === y.toString()
+    );
+
+    const sibur = _.find(this.sibur, f =>
+      f.x === x.toString() && f.y === y.toString()
+    );
+
+    const mendiane = _.find(this.mendiane, f =>
+      f.x === x.toString() && f.y === y.toString()
+    );
+
+    const phiras = _.find(this.phiras, f =>
+      f.x === x.toString() && f.y === y.toString()
+    );
+
+    const thystame = _.find(this.thystame, f =>
+      f.x === x.toString() && f.y === y.toString()
+    );
+
     return {
-      linemate: 0,
-      deraumere: 0,
-      sibur: 0,
-      mendiane: 0,
-      phiras: 0,
-      thystame: 0,
+      food: food ? food.quantity : 0,
+      linemate: linemate ? linemate.quantity : 0,
+      deraumere: deraumere ? deraumere.quantity : 0,
+      sibur: sibur ? sibur.quantity : 0,
+      mendiane: mendiane ? mendiane.quantity : 0,
+      phiras: phiras ? phiras.quantity : 0,
+      thystame: thystame ? thystame.quantity : 0,
     };
   }
 
   tileHasPlayer(x, y) {
     return _.find(this.players, p =>
-        p.x === x && p.y === y
-      );
+      p.x === x && p.y === y
+    );
   }
 
   formatInfoText(tileInfo) {
-    return `Food: ${tileInfo.food}`;
+    return `Food: ${tileInfo.food}
+Linemate: ${tileInfo.linemate}
+Deraumère: ${tileInfo.deraumere}
+Sibur: ${tileInfo.sibur}
+Mendiane: ${tileInfo.mendiane}
+Phiras: ${tileInfo.phiras}
+Thystame: ${tileInfo.thystame}`;
   }
 
-  updateInfoText() {
-    const x = Math.floor(this.input.worldX / this.gridSize);
-    const y = Math.floor(this.input.worldY / this.gridSize);
-
-    if (!this.tileHasPlayer(x, y)) {
-      this.clearInfoText();
-      const tileInfo = this.getTileInfo(x, y);
-      this.infoText.setText(this.formatInfoText(tileInfo));
-      this.infoText.visible = true;
-    }
+  updateInfoText(x, y) {
+    const tileInfo = this.getTileInfo(x, y);
+    this.infoText.setText(this.formatInfoText(tileInfo));
   }
 
   listenClick() {
+    // todo Bug quand worldScale != 1
+    if (this.worldScale > 1) {
+      return;
+    }
+
+
     if (this.input.activePointer.isDown) {
-      //this.updateInfoText();
+      let x = this.input.worldX / this.gridSize;
+      let y = this.input.worldY / this.gridSize;
+
+      if (this.worldScale > this.minScale) {
+        x /= this.worldScale;
+        y /= this.worldScale;
+      }
+
+      x = Math.floor(x);
+      y = Math.floor(y);
+
+      console.log(x, y);
+
+      if (!this.tileHasPlayer(x, y)) {
+        this.clearInfoText();
+        this.updateInfoText(x, y);
+        this.infoText.visible = true;
+      }
     }
   }
 
@@ -423,6 +473,132 @@ class GameState extends Phaser.State {
     if (chest) {
       this.chests = _.without(this.chests, chest);
       chest.destroy();
+    }
+  }
+
+  updateFood(x, y, quantity) {
+    if (quantity > 0) {
+      if (!this.tileHasFood(x, y)) {
+        this.spawnFood(x, y);
+      } else {
+        const food = _.find(this.food, f =>
+          f.x === x && f.y === y
+        );
+
+        if (food) {
+          food.setQuantity(quantity);
+        }
+      }
+    } else {
+      this.removeFood(x, y);
+    }
+  }
+
+  updateLinemate(x, y, quantity) {
+    if (quantity > 0) {
+      if (!this.tileHasLinemate(x, y)) {
+        this.spawnLinemate(x, y);
+      } else {
+        const linemate = _.find(this.linemate, f =>
+          f.x === x && f.y === y
+        );
+
+        if (linemate) {
+          linemate.setQuantity(quantity);
+        }
+      }
+    } else {
+      this.removeLinemate(x, y);
+    }
+  }
+
+  updateDeraumere(x, y, quantity) {
+    if (quantity > 0) {
+      if (!this.tileHasDeraumere(x, y)) {
+        this.spawnDeraumere(x, y);
+      } else {
+        const deraumere = _.find(this.deraumere, f =>
+          f.x === x && f.y === y
+        );
+
+        if (deraumere) {
+          deraumere.setQuantity(quantity);
+        }
+      }
+    } else {
+      this.removeDeraumere(x, y);
+    }
+  }
+
+  updateSibur(x, y, quantity) {
+    if (quantity > 0) {
+      if (!this.tileHasSibur(x, y)) {
+        this.spawnSibur(x, y);
+      } else {
+        const sibur = _.find(this.sibur, f =>
+          f.x === x && f.y === y
+        );
+
+        if (sibur) {
+          sibur.setQuantity(quantity);
+        }
+      }
+    } else {
+      this.removeSibur(x, y);
+    }
+  }
+
+  updateMendiane(x, y, quantity) {
+    if (quantity > 0) {
+      if (!this.tileHasMendiane(x, y)) {
+        this.spawnMendiane(x, y);
+      } else {
+        const mendiane = _.find(this.mendiane, f =>
+          f.x === x && f.y === y
+        );
+
+        if (mendiane) {
+          mendiane.setQuantity(quantity);
+        }
+      }
+    } else {
+      this.removeMendiane(x, y);
+    }
+  }
+
+  updatePhiras(x, y, quantity) {
+    if (quantity > 0) {
+      if (!this.tileHasPhiras(x, y)) {
+        this.spawnPhiras(x, y);
+      } else {
+        const phiras = _.find(this.phiras, f =>
+          f.x === x && f.y === y
+        );
+
+        if (phiras) {
+          phiras.setQuantity(quantity);
+        }
+      }
+    } else {
+      this.removePhiras(x, y);
+    }
+  }
+
+  updateThystame(x, y, quantity) {
+    if (quantity > 0) {
+      if (!this.tileHasThystame(x, y)) {
+        this.spawnThystame(x, y);
+      } else {
+        const thystame = _.find(this.thystame, f =>
+          f.x === x && f.y === y
+        );
+
+        if (thystame) {
+          thystame.setQuantity(quantity);
+        }
+      }
+    } else {
+      this.removeThystame(x, y);
     }
   }
 
@@ -592,61 +768,14 @@ class GameState extends Phaser.State {
   }
 
   receiveBct(x, y, q0, q1, q2, q3, q4, q5, q6) {
-    if (q0 > 0) {
-      if (!this.tileHasFood(x, y)) {
-        this.spawnFood(x, y);
-      }
-    } else {
-      this.removeFood(x, y);
-    }
+    this.updateFood(x, y, q0);
 
-    if (q1 > 0) {
-      if (!this.tileHasLinemate(x, y)) {
-        this.spawnLinemate(x, y);
-      }
-    } else {
-      this.removeLinemate(x, y);
-    }
-
-    if (q2 > 0) {
-      if (!this.tileHasDeraumere(x, y)) {
-        this.spawnDeraumere(x, y);
-      }
-    } else {
-      this.removeDeraumere(x, y);
-    }
-
-    if (q2 > 0) {
-      if (!this.tileHasSibur(x, y)) {
-        this.spawnSibur(x, y);
-      }
-    } else {
-      this.removeSibur(x, y);
-    }
-
-    if (q2 > 0) {
-      if (!this.tileHasMendiane(x, y)) {
-        this.spawnMendiane(x, y);
-      }
-    } else {
-      this.removeMendiane(x, y);
-    }
-
-    if (q2 > 0) {
-      if (!this.tileHasPhiras(x, y)) {
-        this.spawnPhiras(x, y);
-      }
-    } else {
-      this.removePhiras(x, y);
-    }
-
-    if (q2 > 0) {
-      if (!this.tileHasThystame(x, y)) {
-        this.spawnThystame(x, y);
-      }
-    } else {
-      this.removeThystame(x, y);
-    }
+    this.updateLinemate(x, y, q1);
+    this.updateDeraumere(x, y, q2);
+    this.updateSibur(x, y, q3);
+    this.updateMendiane(x, y, q4);
+    this.updatePhiras(x, y, q5);
+    this.updateThystame(x, y, q6);
 
     if (q1 > 0 || q2 > 0 || q3 > 0 || q4 > 0 || q5 > 0 || q6 > 0) {
       if (!this.tileHasChest(x, y)) {

@@ -3,6 +3,11 @@ class Entity {
     this.x = x;
     this.y = y;
     this.state = state;
+    this.quantity = 1;
+  }
+
+  setQuantity(quantity) {
+    this.quantity = quantity;
   }
 }
 
