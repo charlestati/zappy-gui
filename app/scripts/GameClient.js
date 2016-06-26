@@ -21,6 +21,10 @@ class GameClient {
     this.socket.send('GRAPHIC');
   }
 
+  send(msg) {
+    this.socket.send(msg);
+  }
+
   on(event, cb) {
     if (event === 'data') {
       this.dataCallback = cb;

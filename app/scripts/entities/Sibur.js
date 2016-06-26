@@ -13,7 +13,12 @@ class Sibur extends Entity {
   }
 
   destroy() {
-    this.sprite.destroy();
+    const tween = this.state.add.tween(this.sprite).to({
+      alpha: 0,
+    }, 500, Phaser.Easing.Linear.None, true);
+    tween.onComplete.add(() => {
+      this.sprite.destroy();
+    }, this);
   }
 }
 

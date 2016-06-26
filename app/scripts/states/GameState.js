@@ -67,6 +67,14 @@ class GameState extends Phaser.State {
 
     this.setupKeys();
     this.setupGamepad();
+
+    this.infoText = this.game.add.text(20, 20, 'Hello!', {
+      font: '16px Courier',
+      fill: '#ffffff',
+    });
+    this.infoText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 2);
+    this.infoText.fixedToCamera = true;
+    this.infoText.visible = false;
   }
 
   updateScale() {
@@ -217,6 +225,46 @@ class GameState extends Phaser.State {
     this.players.push(new Player(x, y, id, team, spriteName, this));
   }
 
+  getTileInfo(x, y) {
+    this.client.send(`bct ${x} ${y}`);
+    return {
+      linemate: 0,
+      deraumere: 0,
+      sibur: 0,
+      mendiane: 0,
+      phiras: 0,
+      thystame: 0,
+    };
+  }
+
+  tileHasPlayer(x, y) {
+    return _.find(this.players, p =>
+        p.x === x && p.y === y
+      );
+  }
+
+  formatInfoText(tileInfo) {
+    return `Food: ${tileInfo.food}`;
+  }
+
+  updateInfoText() {
+    const x = Math.floor(this.input.worldX / this.gridSize);
+    const y = Math.floor(this.input.worldY / this.gridSize);
+
+    if (!this.tileHasPlayer(x, y)) {
+      this.clearInfoText();
+      const tileInfo = this.getTileInfo(x, y);
+      this.infoText.setText(this.formatInfoText(tileInfo));
+      this.infoText.visible = true;
+    }
+  }
+
+  listenClick() {
+    if (this.input.activePointer.isDown) {
+      //this.updateInfoText();
+    }
+  }
+
   listenPad() {
     if (this.pad.justPressed(Phaser.Gamepad.XBOX360_RIGHT_BUMPER)) {
       if (this.worldScale < this.maxScale) {
@@ -253,6 +301,7 @@ class GameState extends Phaser.State {
   update() {
     this.updateCamera();
     this.listenPad();
+    this.listenClick();
   }
 
   updateCamera() {
@@ -300,10 +349,20 @@ class GameState extends Phaser.State {
     }
   }
 
+  clearInfoText() {
+    _.map(this.players, (player) => {
+      player.infoText.visible = false;
+    });
+
+    this.infoText.visible = false;
+  }
+
   tileHasFood(x, y) {
     return _.find(this.food, f =>
-      f.x === x && f.y === y
-    );
+        f.x === x && f.y === y
+      ) || _.find(this.burgers, b =>
+        b.x === x && b.y === y
+      );
   }
 
   getPlayerFromId(id) {
@@ -387,7 +446,7 @@ class GameState extends Phaser.State {
     );
 
     if (burger) {
-      this.burgers = _.without(this.burgers, food);
+      this.burgers = _.without(this.burgers, burger);
       burger.destroy();
     }
   }
@@ -518,6 +577,14 @@ class GameState extends Phaser.State {
     }
   }
 
+  setPlayerInv(id, q0, q1, q2, q3, q4, q5, q6) {
+    const player = this.getPlayerFromId(id);
+
+    if (player) {
+      player.setInventory(q0, q1, q2, q3, q4, q5, q6);
+    }
+  }
+
   receiveMsz(x, y) {
     this.mapWidth = x;
     this.mapHeight = y;
@@ -639,10 +706,38 @@ class GameState extends Phaser.State {
   }
 
   receivePie(x, y, result) {
-    const players = this.getPlayersOnTile(x, y);
+    for (let i = 0; i < this.players.length; ++i) {
+      this.players[i].stopCasting();
+    }
+  }
 
-    for (let i = 0; i < players.length; ++i) {
-      players[i].stopCasting();
+  receivePin(id, x, y, q0, q1, q2, q3, q4, q5, q6) {
+    this.setPlayerInv(id, q0, q1, q2, q3, q4, q5, q6);
+  }
+
+  receivePgt(id, resource) {
+    const player = this.getPlayerFromId(id);
+
+    console.log('ok');
+
+    if (player) {
+      player.pickedResource(resource);
+    }
+  }
+
+  receivePdr(id, resource) {
+    const player = this.getPlayerFromId(id);
+
+    if (player) {
+      player.threwResource(resource);
+    }
+  }
+
+  receivePlv(id, level) {
+    const player = this.getPlayerFromId(id);
+
+    if (player) {
+      player.updateLevel(level);
     }
   }
 
