@@ -287,25 +287,9 @@ Thystame: ${tileInfo.thystame}`;
   }
 
   listenClick() {
-    // todo Bug quand worldScale != 1
-    if (this.worldScale > 1) {
-      return;
-    }
-
-
     if (this.input.activePointer.isDown) {
-      let x = this.input.worldX / this.gridSize;
-      let y = this.input.worldY / this.gridSize;
-
-      if (this.worldScale > this.minScale) {
-        x /= this.worldScale;
-        y /= this.worldScale;
-      }
-
-      x = Math.floor(x);
-      y = Math.floor(y);
-
-      console.log(x, y);
+      const x = Math.floor(this.input.worldX / this.gridSize / this.worldScale);
+      const y = Math.floor(this.input.worldY / this.gridSize / this.worldScale);
 
       if (!this.tileHasPlayer(x, y)) {
         this.clearInfoText();
