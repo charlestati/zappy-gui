@@ -37,6 +37,14 @@ class Player extends Entity {
 
     this.spritePlayer.inputEnabled = true;
     this.spritePlayer.events.onInputDown.add((sprite) => {
+      const infoText = this.state.add.text(0, 0, 'Hello', {
+        font: '30px Courier',
+        fill: '#ffffff',
+      });
+
+      infoText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 2);
+      infoText.fixedToCamera = true;
+      
       const tween = this.state.add.tween(this.state.camera).to({
         x: this.x * this.state.gridSize - this.state.camera.width / 2,
         y: this.y * this.state.gridSize - this.state.camera.height / 2,
@@ -51,6 +59,9 @@ class Player extends Entity {
     this.spriteSparks = this.state.add.sprite(0, 0, 'sparks');
     this.spriteSparks.smoothed = false;
     this.spriteSparks.animations.add('idle');
+    this.spriteSparks.animations.play('idle', 6, true);
+    this.spriteSparks.visible = false;
+    this.spriteShadow.addChild(this.spriteSparks);
 
     this.isMoving = false;
     this.isCasting = false;
@@ -112,13 +123,11 @@ class Player extends Entity {
     }
 
     this.isCasting = true;
-
-    this.spriteShadow.addChild(this.spriteSparks);
-    this.spriteSparks.animations.play('idle', 6, true);
+    this.spriteSparks.visible = true;
   }
 
   stopCasting() {
-    this.spriteShadow.removeChild(this.spriteSparks);
+    this.spriteSparks.visible = false;
     this.isCasting = false;
   }
 }

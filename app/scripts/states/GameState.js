@@ -46,9 +46,6 @@ class GameState extends Phaser.State {
 
     this.playerSprites = this.add.group();
 
-    this.setupKeys();
-    this.setupGamepad();
-
     this.linemate = [];
     this.deraumere = [];
     this.sibur = [];
@@ -68,8 +65,8 @@ class GameState extends Phaser.State {
 
     this.showGrid = false;
 
-    this.spawnLinemate(0, 0);
-    this.spawnPhiras(0, 0);
+    this.setupKeys();
+    this.setupGamepad();
   }
 
   updateScale() {
@@ -87,8 +84,8 @@ class GameState extends Phaser.State {
     }
 
     this.world.setBounds(-this.offsetX, -this.offsetY,
-      this.game.width * this.worldScale + this.offsetX * 2,
-      this.game.height * this.worldScale + this.offsetY * 2);
+      this.mapWidth * this.gridSize * this.worldScale + this.offsetX * 2,
+      this.mapHeight * this.gridSize * this.worldScale + this.offsetY * 2);
 
     if (this.worldScale < this.maxScale) {
       this.chestSprites.visible = true;
@@ -101,15 +98,6 @@ class GameState extends Phaser.State {
       this.foodSprites.visible = true;
       this.gemSprites.visible = true;
     }
-
-    // todo Camera bug when scaling
-    /*
-     this.gridSize = 16 * this.worldScale;
-
-     this.world.scale.set(this.worldScale);
-
-     this.camera.scale.set(this.worldScale);
-     */
   }
 
   worldZoomIn() {
@@ -177,16 +165,20 @@ class GameState extends Phaser.State {
       if (this.showGrid) {
         this.showGrid = false;
         if (this.gridSprite) {
-          this.gridSprite.destroy();
+          this.gridSprite.visible = false;
         }
       } else {
         this.showGrid = true;
-        this.gridSprite = this.game.add.sprite(0, 0, this.game.create.grid('grid',
-          this.mapWidth * this.gridSize,
-          this.mapHeight * this.gridSize,
-          this.gridSize, this.gridSize, 'rgba(0, 0, 0, 0.1)'));
-        this.gridSprite.smoothed = false;
-        this.gridSprite.scale.set(this.worldScale, this.worldScale);
+        this.gridSprite.visible = true;
+      }
+    });
+
+    const keyM = this.input.keyboard.addKey(Phaser.Keyboard.M);
+    keyM.onDown.add(() => {
+      if (this.soundtrack.paused) {
+        this.soundtrack.resume();
+      } else {
+        this.soundtrack.pause();
       }
     });
   }
@@ -194,41 +186,6 @@ class GameState extends Phaser.State {
   setupGamepad() {
     this.game.input.gamepad.start();
     this.pad = this.game.input.gamepad.pad1;
-
-    this.pad.addCallbacks(this, {
-      onConnect: () => {
-        const rightBumper = this.pad.getButton(Phaser.Gamepad.XBOX360_RIGHT_BUMPER);
-        const leftBumper = this.pad.getButton(Phaser.Gamepad.XBOX360_LEFT_BUMPER);
-        const aButton = this.pad.getButton(Phaser.Gamepad.XBOX360_A);
-        const bButton = this.pad.getButton(Phaser.Gamepad.XBOX360_B);
-
-        const rightBumperCb = () => {
-          if (this.worldScale < this.maxScale) {
-            this.worldZoomIn();
-            this.worldZoomIn();
-          }
-        };
-
-        const leftBumperCb = () => {
-          if (this.worldScale > this.minScale) {
-            this.worldZoomOut();
-            this.worldZoomOut();
-          }
-        };
-
-        rightBumper.onDown.add(rightBumperCb);
-
-        leftBumper.onDown.add(leftBumperCb);
-
-        aButton.onDown.add(() => {
-          this.followNext();
-        });
-
-        bButton.onDown.add(() => {
-          this.followPrev();
-        });
-      },
-    });
   }
 
   setupWorld() {
@@ -246,6 +203,13 @@ class GameState extends Phaser.State {
     this.world.setBounds(-this.offsetX, -this.offsetY,
       width + this.offsetX * 2, height + this.offsetY * 2);
 
+    this.gridSprite = this.game.add.sprite(0, 0, this.game.create.grid('grid',
+      this.mapWidth * this.gridSize,
+      this.mapHeight * this.gridSize,
+      this.gridSize, this.gridSize, 'rgba(0, 0, 0, 0.1)'));
+    this.gridSprite.smoothed = false;
+    this.gridSprite.visible = false;
+
     this.updateScale();
   }
 
@@ -253,8 +217,42 @@ class GameState extends Phaser.State {
     this.players.push(new Player(x, y, id, team, spriteName, this));
   }
 
+  listenPad() {
+    if (this.pad.justPressed(Phaser.Gamepad.XBOX360_RIGHT_BUMPER)) {
+      if (this.worldScale < this.maxScale) {
+        this.worldZoomIn();
+      }
+    }
+
+    if (this.pad.justPressed(Phaser.Gamepad.XBOX360_LEFT_BUMPER)) {
+      if (this.worldScale > this.minScale) {
+        this.worldZoomOut();
+      }
+    }
+
+    if (this.pad.justPressed(Phaser.Gamepad.XBOX360_A)) {
+      this.followNext();
+    }
+
+    if (this.pad.justPressed(Phaser.Gamepad.XBOX360_B)) {
+      this.followPrev();
+    }
+
+    // todo Fix multiple pressed bug
+    if (this.pad.justPressed(Phaser.Gamepad.XBOX360_X)) {
+      if (this.showGrid) {
+        this.gridSprite.visible = false;
+        this.showGrid = false;
+      } else {
+        this.gridSprite.visible = true;
+        this.showGrid = true;
+      }
+    }
+  }
+
   update() {
     this.updateCamera();
+    this.listenPad();
   }
 
   updateCamera() {
