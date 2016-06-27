@@ -75,6 +75,15 @@ class GameState extends Phaser.State {
     this.infoText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 2);
     this.infoText.fixedToCamera = true;
     this.infoText.visible = false;
+
+    this.teams = [];
+    this.teamInfoText = this.game.add.text(300, 20, 'Hello!', {
+      font: '16px Courier',
+      fill: '#ffffff',
+    });
+    this.teamInfoText.setShadow(3, 3, 'rgba(0, 0, 0, 0.5)', 2);
+    this.teamInfoText.fixedToCamera = true;
+    this.teamInfoText.visible = false;
   }
 
   updateScale() {
@@ -286,6 +295,23 @@ Thystame: ${tileInfo.thystame}`;
     this.infoText.setText(this.formatInfoText(tileInfo));
   }
 
+  updateTeamInfo() {
+    let txt = '';
+    for (let i = 0; i < this.teams.length; ++i) {
+      txt += this.teams[i];
+      txt += ': ';
+      let teamSize = 0;
+      for (let j = 0; j < this.players.length; ++j) {
+        if (this.players[j].team === this.teams[i]) {
+          ++teamSize;
+        }
+      }
+      txt += teamSize;
+      txt += '\n';
+    }
+    this.teamInfoText.setText(txt);
+  }
+
   listenClick() {
     if (this.input.activePointer.isDown) {
       const x = Math.floor(this.input.worldX / this.gridSize / this.worldScale);
@@ -424,6 +450,8 @@ Thystame: ${tileInfo.thystame}`;
       this.players = _.without(this.players, player);
       player.destroy();
     }
+
+    this.updateTeamInfo();
   }
 
   spawnEgg(x, y, eggId, playerId) {
@@ -772,6 +800,7 @@ Thystame: ${tileInfo.thystame}`;
 
   receivePnw(id, x, y, orientation, level, team) {
     this.addPlayer(x, y, id, team, 'brendan');
+    this.updateTeamInfo();
   }
 
   receivePpo(id, x, y, orientation) {
@@ -852,6 +881,12 @@ Thystame: ${tileInfo.thystame}`;
     if (player) {
       player.updateLevel(level);
     }
+  }
+
+  receiveTna(team) {
+    this.teams.push(team);
+    this.updateTeamInfo();
+    this.teamInfoText.visible = true;
   }
 
   handleData(data) {
